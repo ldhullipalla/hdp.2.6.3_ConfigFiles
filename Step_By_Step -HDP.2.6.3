@@ -1,0 +1,551 @@
+Protect against accidental termination
+Add new storage volume: delete on termination
+
+df -h
+lsblk
+
+sudo mkfs -t ext4 /dev/xvdb
+sudo mkdir /grid/
+sudo mount /dev/xvdb /grid
+df -h
+sudo vi /etc/fstab
+/dev/xvdb                               /grid             ext4     defaults,nofail 0 2
+sudo reboot
+
+sudo vi /etc/sysconfig/selinux
+sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
+
+change value from enforcing to disabled
+sudo systemctl disable firewalld
+service firewalld stop
+sudo yum install ntp
+sudo systemctl enable ntpd
+sudo systemctl start ntpd
+sudo systemctl is-enabled ntpd
+umask
+change umask value in /etc/profile
+
+sudo su -
+ssh-keygen -t rsa
+cd .ssh/
+cat id_rsa.pub >> authorized_keys
+
+reboot
+login as root
+umask
+sudo systemctl is-enabled ntpd
+
+
+
+export DFS_NAME_DIR=/grid/hadoop/hdfs/nn
+export DFS_DATA_DIR=/grid/hadoop/hdfs/dn
+export FS_CHECKPOINT_DIR=/grid/hadoop/hdfs/snn
+export HDFS_LOG_DIR=/var/log/hadoop/hdfs
+export HDFS_PID_DIR=/var/run/hadoop/hdfs
+export HADOOP_CONF_DIR=/etc/hadoop/conf
+export YARN_LOCAL_DIR=/grid/hadoop/yarn
+export YARN_LOG_DIR=/var/log/hadoop-yarn
+export YARN_LOCAL_LOG_DIR=/grid/hadoop/yarn/logs
+export YARN_PID_DIR=/var/run/hadoop-yarn
+export MAPRED_LOG_DIR=/var/log/hadoop-mapreduce
+export MAPRED_PID_DIR=/var/run/hadoop-mapreduce
+export PIG_CONF_DIR=/etc/pig/conf
+export PIG_LOG_DIR=/var/log/pig
+export PIG_PID_DIR=/var/run/pig
+export HIVE_CONF_DIR=/etc/hive/conf
+export HIVE_LOG_DIR=/var/log/hive
+export HIVE_PID_DIR=/var/run/hive
+export WEBHCAT_CONF_DIR=/etc/hcatalog/conf/webhcat
+export WEBHCAT_LOG_DIR=/var/log/webhcat
+export WEBHCAT_PID_DIR=/var/run/webhcat
+export ZOOKEEPER_DATA_DIR=/grid/hadoop/zookeeper/data
+export ZOOKEEPER_CONF_DIR=/etc/zookeeper/conf
+export ZOOKEEPER_LOG_DIR=/var/log/zookeeper
+export ZOOKEEPER_PID_DIR=/var/run/zookeeper
+
+export HADOOP_GROUP=hadoop
+export HDFS_USER=hdfs
+export MAPRED_USER=mapred
+export YARN_USER=yarn
+export ZOOKEEPER_USER=zookeeper
+export HIVE_USER=hive
+export WEBHCAT_USER=hcat
+
+
+mkdir -p $DFS_NAME_DIR;
+mkdir -p $FS_CHECKPOINT_DIR;
+mkdir -p $DFS_DATA_DIR;
+mkdir -p $YARN_LOCAL_DIR;
+mkdir -p $YARN_LOCAL_LOG_DIR;
+mkdir -p $HDFS_LOG_DIR;
+mkdir -p $YARN_LOG_DIR; 
+mkdir -p $HDFS_PID_DIR;
+mkdir -p $YARN_PID_DIR;
+mkdir -p $MAPRED_LOG_DIR;
+mkdir -p $MAPRED_PID_DIR;
+mkdir -p $ZOOKEEPER_LOG_DIR; 
+mkdir -p $ZOOKEEPER_PID_DIR; 
+mkdir -p $ZOOKEEPER_DATA_DIR; 
+mkdir -p /grid/hadoop/yarn/local
+
+cp /home/ec2-user/jdk-8u161-linux-x64.rpm /opt/
+
+yum localinstall jdk-8u161-linux-x64.rpm
+
+yum install wget
+wget -nv http://public-repo-1.hortonworks.com/HDP/centos7/2.x/updates/2.4.2.0/hdp.repo -O /etc/yum.repos.d/hdp.repo
+
+yum install hadoop hadoop-hdfs hadoop-libhdfs hadoop-yarn hadoop-mapreduce hadoop-client openssl
+
+yum install lzo lzo-devel hadooplzo hadooplzo-native
+
+
+chown -R $HDFS_USER:$HADOOP_GROUP $DFS_NAME_DIR;
+chown -R $HDFS_USER:$HADOOP_GROUP $FS_CHECKPOINT_DIR; 
+chown -R $HDFS_USER:$HADOOP_GROUP $DFS_DATA_DIR;
+chown -R $YARN_USER:$HADOOP_GROUP $YARN_LOCAL_DIR;
+chown -R $YARN_USER:$HADOOP_GROUP $YARN_LOCAL_LOG_DIR; 
+chown -R $HDFS_USER:$HADOOP_GROUP $HDFS_LOG_DIR;
+chown -R $YARN_USER:$HADOOP_GROUP $YARN_LOG_DIR;
+chown -R $HDFS_USER:$HADOOP_GROUP $HDFS_PID_DIR;
+chown -R $YARN_USER:$HADOOP_GROUP $YARN_PID_DIR;
+chown -R $MAPRED_USER:$HADOOP_GROUP $MAPRED_LOG_DIR;
+chown -R $MAPRED_USER:$HADOOP_GROUP $MAPRED_PID_DIR;
+chown -R $ZOOKEEPER_USER:$HADOOP_GROUP $ZOOKEEPER_LOG_DIR;  
+chown -R $ZOOKEEPER_USER:$HADOOP_GROUP $ZOOKEEPER_PID_DIR;
+chown -R $ZOOKEEPER_USER:$HADOOP_GROUP $ZOOKEEPER_DATA_DIR;
+chown -R $YARN_USER:$HADOOP_GROUP /grid/hadoop/yarn/local;
+
+
+chmod -R 755 $DFS_NAME_DIR;
+chmod -R 755 $FS_CHECKPOINT_DIR;
+chmod -R 750 $DFS_DATA_DIR;
+chmod -R 755 $YARN_LOCAL_DIR;
+chmod -R 755 $YARN_LOCAL_LOG_DIR;
+chmod -R 755 $HDFS_LOG_DIR;
+chmod -R 755 $YARN_LOG_DIR;
+chmod -R 755 $HDFS_PID_DIR;
+chmod -R 755 $YARN_PID_DIR;
+chmod -R 755 $MAPRED_LOG_DIR;
+chmod -R 755 $MAPRED_PID_DIR;
+chmod -R 755 $ZOOKEEPER_LOG_DIR; 
+chmod -R 755 $ZOOKEEPER_PID_DIR;
+chmod -R 755 $ZOOKEEPER_DATA_DIR;
+
+install java and add java_home to /etc/profile
+export JAVA_HOME=/usr/java/jdk1.8.0_161/
+export PATH=$PATH:$JAVA_HOME
+
+
+add $ZOOKEEPER_LOG_DIR in $ZOOKEEPER_CONF_DIR/zookeeper-env.sh
+add $ZOOKEEPER_DATA_DIR for datadir in zoo.cfg
+
+su zookeeper
+export ZOOCFGDIR=$ZOOKEEPER_CONF_DIR ;
+export ZOOCFG=zoo.cfg;
+source $ZOOKEEPER_CONF_DIR/zookeeper-env.sh ;
+
+/usr/hdp/2.4.2.0-258/zookeeper/bin/zkServer.sh     start
+
+rpm –qa | grep hdp
+hdp-select-2.4.2.0-258.el6.noarch
+
+/usr/bin/hdp-select set all 2.4.2.0-258
+
+
+
+Edit /tmp/hadoop_conf_files/core_hadoop/core-site.xml and modify the following properties:
+
+<property>
+     <name>fs.defaultFS</name>
+     <value>hdfs://ip-172-31-5-22.us-east-2.compute.internal:8020</value>
+     <description>Enter your NameNode hostname</description>
+</property>
+
+
+
+
+
+
+
+
+Edit /tmp/hadoop_conf_files/core_hadoop/hdfs-site.xml and modify the following properties:
+
+<property>
+     <name>dfs.namenode.name.dir</name>
+     <value>/grid/hadoop/hdfs/nn</value>
+     <description>Comma-separated list of paths. Use the list of directories from $DFS_NAME_DIR. For example, /grid/hadoop/hdfs/nn,/grid1/hadoop/hdfs/nn.</description>
+</property>
+
+<property>
+     <name>dfs.datanode.data.dir</name>
+     <value>file:///grid/hadoop/hdfs/dn</value>
+     <description>Comma-separated list of paths. Use the list of directories from $DFS_DATA_DIR. For example, file:///grid/hadoop/hdfs/dn, file:///grid1/ hadoop/hdfs/dn.</description>
+</property>
+
+<property>
+     <name>dfs.namenode.http-address</name>
+     <value>ip-172-31-5-22.us-east-2.compute.internal:50070</value>
+     <description>Enter your NameNode hostname for http access.</description>
+</property>
+
+<property>
+     <name>dfs.namenode.secondary.http-address</name>
+     <value>ip-172-31-5-22.us-east-2.compute.internal:50090</value>
+     <description>Enter your Secondary NameNode hostname.</description>
+</property>
+
+<property>
+     <name>dfs.namenode.checkpoint.dir</name>
+     <value>/grid/hadoop/hdfs/snn</value>
+     <description>A comma-separated list of paths. Use the list of directories from $FS_CHECKPOINT_DIR. For example, /grid/hadoop/hdfs/snn,sbr/grid1/hadoop/hdfs/ snn,sbr/grid2/hadoop/hdfs/snn </description>
+</property>
+
+<property>
+     <name>dfs.namenode.checkpoint.edits.dir</name>
+     <value>/grid/hadoop/hdfs/snn</value>
+</property>
+                    
+<property>
+     <name>dfs.namenode.rpc-address</name>
+     <value>ip-172-31-5-22.us-east-2.compute.internal:8020>
+     <description>The RPC address that handles all clients requests.</description.>
+</property>
+                    
+<property>
+     <name>dfs.namenode.https-address</name>
+     <value>ip-172-31-5-22.us-east-2.compute.internal:50470>
+     <description>The namenode secure http server address and port.</description.>
+</property>
+
+
+
+
+
+
+
+
+
+Edit /tmp/hadoop_conf_files/core_hadoop/yarn-site.xml and modify the following properties:
+
+<property>
+     <name>yarn.resourcemanager.scheduler.class</name>
+     <value>org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler</value>
+</property>
+
+<property>
+     <name>yarn.resourcemanager.resource-tracker.address</name>
+     <value>ip-172-31-5-22.us-east-2.compute.internal:8025</value>
+     <description>Enter your ResourceManager hostname.</description>
+</property>
+
+<property>
+     <name>yarn.resourcemanager.scheduler.address</name>
+     <value>ip-172-31-5-22.us-east-2.compute.internal:8030</value>
+     <description>Enter your ResourceManager hostname.</description>
+</property>
+
+<property>
+     <name>yarn.resourcemanager.address</name>
+     <value>ip-172-31-5-22.us-east-2.compute.internal:8050</value>
+     <description>Enter your ResourceManager hostname.</description>
+</property>
+
+<property>
+     <name>yarn.resourcemanager.admin.address</name>
+     <value>ip-172-31-5-22.us-east-2.compute.internal:8141</value>
+     <description>Enter your ResourceManager hostname.</description>
+</property>
+
+<property>
+     <name>yarn.nodemanager.local-dirs</name>
+     <value>/grid/hadoop/yarn/local</value>
+     <description>Comma separated list of paths. Use the list of directories from $YARN_LOCAL_DIR. For example, /grid/hadoop/yarn/local,/grid1/hadoop/yarn/ local.</description>
+</property>
+
+<property>
+     <name>yarn.nodemanager.log-dirs</name>
+     <value>/grid/hadoop/yarn/logs</value>
+     <description>Use the list of directories from $YARN_LOCAL_LOG_DIR. For example, /grid/hadoop/yarn/log,/grid1/hadoop/yarn/ log,/grid2/hadoop/yarn/log</description>
+</property>
+
+<property>
+     <name>yarn.nodemanager.recovery</name.dir>
+     <value>{hadoop.tmp.dir}/yarn-nm-recovery</value>
+</property>
+
+<property>
+     <name>yarn.log.server.url</name>
+     <value>//ip-172-31-5-22.us-east-2.compute.internal:19888/jobhistory/logs/</ value>
+     <description>URL for job history server</description>
+</property>
+
+<property>
+     <name>yarn.resourcemanager.webapp.address</name>
+     <value>ip-172-31-5-22.us-east-2.compute.internal:8088</value>
+     <description>URL for job history server</description>
+</property>
+              
+<property>
+     <name>yarn.nodemanager.recovery</name.dir>
+     <value>{hadoop.tmp.dir}/yarn-nm-recovery</value>
+</property>
+
+<property>
+    <name>yarn.timeline-service.webapp.address</name>
+    <value>ip-172-31-5-22.us-east-2.compute.internal:8188</value>
+</property>
+                    
+					
+					
+#############################################################					
+<property>
+     <name>mapreduce.admin.map.child.java.opts</name>
+     <value>-server -Djava.net.preferIPv4Stack=true -Dhdp.version=${hdp.version}</value>
+     <final>true</final>
+</property>
+
+
+
+
+<property>
+     <name>mapreduce.admin.user.env</name> 
+     <value>LD_LIBRARY_PATH=/usr/hdp/${hdp.version}/hadoop/lib/native:/usr/hdp/${hdp.version}/hadoop/lib/native/Linux-amd64-64</value>
+</property>
+
+<property>
+     <name>mapreduce.application.framework.path</name>
+     <value>/hdp/apps/${hdp.version}/mapreduce/mapreduce.tar.gz#mr-framework</value>
+</property>
+
+<property>
+<name>mapreduce.application.classpath</name>
+<value>$PWD/mr-framework/hadoop/share/hadoop/mapreduce/*:$PWD/mr-framework/hadoop/share/hadoop/mapreduce/lib/*:$PWD/mr-framework/hadoop/share/hadoop/common/*:$PWD/mr-framework/hadoop/share/hadoop/common/lib/*:$PWD/mr-framework/hadoop/share/hadoop/yarn/*:$PWD/mr-framework/hadoop/share/hadoop/yarn/lib/*:$PWD/mr-framework/hadoop/share/hadoop/hdfs/*:$PWD/mr-framework/hadoop/share/hadoop/hdfs/lib/*:/usr/hdp/${hdp.version}/hadoop/lib/hadoop-lzo-0.6.0.${hdp.version}.jar:/etc/hadoop/conf/secure</value>
+</property>
+
+
+
+
+
+ <property>
+    <name>yarn.application.classpath</name>
+    <value>/etc/hadoop/conf,/usr/lib/hadoop/*,/usr/lib/hadoop/lib/*,/usr/lib/hadoop-hdfs/*,/usr/lib/hadoop-hdfs/lib/*,/usr/lib/hadoop-yarn/*,/usr/lib/hadoop-yarn/lib/*,/usr/lib/hadoop-mapreduce/*,/usr/lib/hadoop-mapreduce/lib/*</value>
+  </property>
+
+  <property>
+     <name>yarn.application.classpath</name> 
+     <value>$HADOOP_CONF_DIR,/usr/hdp/${hdp.version}/hadoop-client/*,
+     /usr/hdp/${hdp.version}/hadoop-client/lib/*,
+     /usr/hdp/${hdp.version}/hadoop-hdfs-client/*,
+     /usr/hdp/${hdp.version}/hadoop-hdfs-client/lib/*,
+     /usr/hdp/${hdp.version}/hadoop-yarn-client/*,
+     /usr/hdp/${hdp.version}/hadoop-yarn-client/lib/*</value>
+ </property> 
+
+					
+					
+
+					
+Edit /tmp/hadoop_conf_files/core_hadoop/mapred-site.xml and modify the following properties:
+
+<property>
+     <name>mapreduce.jobhistory.address</name>
+     <value>ip-172-31-5-22.us-east-2.compute.internal:10020</value>
+     <description>Enter your JobHistoryServer hostname.</description>
+</property>
+
+<property>
+     <name>mapreduce.jobhistory.webapp.address</name>
+     <value>ip-172-31-5-22.us-east-2.compute.internal:19888</value>
+     <description>Enter your JobHistoryServer hostname.</description>
+</property>
+
+
+
+
+
+/etc/profile:
+
+touch $HADOOP_CONF_DIR/dfs.exclude
+JAVA_HOME=/usr/java/jdk1.8.0_161/
+export JAVA_HOME
+export HADOOP_CONF_DIR=/etc/hadoop/conf/
+export PATH=$PATH:$JAVA_HOME:$HADOOP_CONF_DIR
+
+
+rm -rf $HADOOP_CONF_DIR
+mkdir -p $HADOOP_CONF_DIR
+
+cp /tmp/hadoop_conf_files/core_hadoop/* $HADOOP_CONF_DIR
+
+chown -R $HDFS_USER:$HADOOP_GROUP $HADOOP_CONF_DIR/../
+chmod -R 755 $HADOOP_CONF_DIR/../
+
+vi /etc/hadoop/conf/hadoop-env.sh
+substitute java_path
+
+substitute the value for HADOOP_LIBEXEC_DIR:
+#export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec
+export HADOOP_LIBEXEC_DIR=/usr/hdp/current/hadoop-client/libexec
+
+
+add these 2 params to export HADOOP_NAMENODE_OPTS=
+-XX:+UseCMSInitiatingOccupancyOnly 
+-XX:CMSInitiatingOccupancyFraction=70
+
+
+export HADOOP_NAMENODE_OPTS="-server -XX:ParallelGCThreads=8 -XX:+UseConcMarkSweepGC -XX:+UseCMSInitiatingOccupancyOnly -XX:CMSInitiatingOccupancyFraction=70 -XX:ErrorFile=/var/log/hadoop/$USER/hs_err_pid%p.log -XX:NewSize=200m -XX:MaxNewSize=640m -Xloggc:/var/log/hadoop/$USER/gc.log-`date +'%Y%m%d%H%M'` -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Xms1024m -Xmx1024m -Dhadoop.security.logger=INFO,DRFAS -Dhdfs.audit.logger=INFO,DRFAAUDIT ${HADOOP_NAMENODE_OPTS}"
+
+
+Format and start:
+su - $HDFS_USER
+/usr/hdp/current/hadoop-hdfs-namenode/../hadoop/bin/hdfs namenode -format
+/usr/hdp/current/hadoop-hdfs-namenode/../hadoop/sbin/hadoop-daemon.sh --config $HADOOP_CONF_DIR start namenode
+
+su - $HDFS_USER
+/usr/hdp/current/hadoop-hdfs-secondarynamenode/../hadoop/sbin/hadoop-daemon.sh --config $HADOOP_CONF_DIR start secondarynamenode
+
+su - $HDFS_USER
+/usr/hdp/current/hadoop-hdfs-datanode/../hadoop/sbin/hadoop-daemon.sh --config $HADOOP_CONF_DIR start datanode
+
+http://$namenode.full.hostname:50070
+su - $HDFS_USER
+hdfs dfs -mkdir -p /user/hdfs
+su - $HDFS_USER
+hdfs dfs -copyFromLocal /etc/passwd passwd 
+hdfs dfs -ls
+
+
+hdfs dfs -mkdir -p /hdp/apps/hdp_2.4.2.0-258/mapreduce/
+hdfs dfs -put /usr/hdp/current/hadoop-client/mapreduce.tar.gz /hdp/apps/hdp_2.4.2.0-258/mapreduce/
+hdfs dfs -chown -R hdfs:hadoop /hdp
+hdfs dfs -chmod -R 555 /hdp/apps/hdp_2.4.2.0-258/mapreduce
+hdfs dfs -chmod 444 /hdp/apps/hdp_2.4.2.0-258/mapreduce/mapreduce.tar.gz
+
+
+mapred-site.xml:
+
+<property>
+     <name>mapreduce.admin.map.child.java.opts</name>
+     <value>-server -Djava.net.preferIPv4Stack=true -Dhdp.version=${hdp.version}</value>
+     <final>true</final>
+</property>
+
+
+<property>
+     <name>mapreduce.admin.user.env</name> 
+     <value>LD_LIBRARY_PATH=/usr/hdp/${hdp.version}/hadoop/lib/native:/usr/hdp/${hdp.version}/hadoop/lib/native/Linux-amd64-64</value>
+</property>
+
+
+<property>
+     <name>mapreduce.application.framework.path</name>
+     <value>/hdp/apps/${hdp.version}/mapreduce/mapreduce.tar.gz#mr-framework</value>
+</property>
+
+<property>
+<name>mapreduce.application.classpath</name>
+<value>$PWD/mr-framework/hadoop/share/hadoop/mapreduce/*:$PWD/mr-framework/hadoop/share/hadoop/mapreduce/lib/*:$PWD/mr-framework/hadoop/share/hadoop/common/*:$PWD/mr-framework/hadoop/share/hadoop/common/lib/*:$PWD/mr-framework/hadoop/share/hadoop/yarn/*:$PWD/mr-framework/hadoop/share/hadoop/yarn/lib/*:$PWD/mr-framework/hadoop/share/hadoop/hdfs/*:$PWD/mr-framework/hadoop/share/hadoop/hdfs/lib/*:/usr/hdp/${hdp.version}/hadoop/lib/hadoop-lzo-0.6.0.${hdp.version}.jar:/etc/hadoop/conf/secure</value>
+</property>
+
+
+yarn-site.xml
+
+<property>
+     <name>yarn.application.classpath</name> 
+     <value>$HADOOP_CONF_DIR,/usr/hdp/${hdp.version}/hadoop-client/*,
+     /usr/hdp/${hdp.version}/hadoop-client/lib/*,
+     /usr/hdp/${hdp.version}/hadoop-hdfs-client/*,
+     /usr/hdp/${hdp.version}/hadoop-hdfs-client/lib/*,
+     /usr/hdp/${hdp.version}/hadoop-yarn-client/*,
+     /usr/hdp/${hdp.version}/hadoop-yarn-client/lib/*</value>
+</property> 
+
+Check the hdp documentation for this step:
+vi /etc/hadoop/conf/container-executor.cfg
+
+export YARN_LOCAL_DIR=/grid/hadoop/yarn
+export YARN_LOCAL_LOG_DIR=/grid/hadoop/yarn/logs
+
+yarn.nodemanager.local-dirs=TODO-YARN-LOCAL-DIR --> /grid/hadoop/yarn
+yarn.nodemanager.log-dirs=TODO-YARN-LOG-DIR --> /grid/hadoop/yarn/logs
+
+ln -s /usr/hdp/current/hadoop-yarn-client/  /usr/lib/hadoop-yarn
+
+ln -s /usr/hdp/current/hadoop-client /usr/lib/hadoop
+
+su yarn
+
+/usr/hdp/current/hadoop-yarn-resourcemanager/sbin/yarn-daemon.sh --config $HADOOP_CONF_DIR start resourcemanager
+
+/usr/hdp/current/hadoop-yarn-nodemanager/sbin/yarn-daemon.sh --config $HADOOP_CONF_DIR start nodemanager
+
+
+
+
+chown -R root:hadoop /usr/hdp/current/hadoop-yarn*/bin/container-executor 
+chmod -R 6050 /usr/hdp/current/hadoop-yarn*/bin/container-executor
+
+
+
+
+su $HDFS_USER
+hdfs dfs -mkdir -p /mr-history/tmp 
+hdfs dfs -chmod -R 1777 /mr-history/tmp 
+
+hdfs dfs -mkdir -p /mr-history/done 
+hdfs dfs -chmod -R 1777 /mr-history/done
+hdfs dfs -chown -R $MAPRED_USER:$HDFS_USER /mr-history
+
+hdfs dfs -mkdir -p /app-logs
+hdfs dfs -chmod -R 1777 /app-logs
+
+hdfs dfs -chown $YARN_USER:$HDFS_USER /app-logs
+
+su mapred
+/usr/hdp/current/hadoop-mapreduce-historyserver/sbin/mr-jobhistory-daemon.sh --config $HADOOP_CONF_DIR start historyserver
+
+
+​Smoke Test MapReduce: Follow HDP documentation
+
+/usr/hdp/current/hadoop-client/bin/hadoop jar /usr/hdp/current/hadoop-mapreduce-client/hadoop-mapreduce-examples-2.7.1.2.4.2.0-258.jar teragen 10000 tmp/teragenout
+
+/usr/hdp/current/hadoop-client/bin/hadoop jar /usr/hdp/current/hadoop-mapreduce-client/hadoop-mapreduce-examples-2.7.1.2.4.2.0-258.jar terasort tmp/teragenout9 tmp/terasortout
+
+create image from instance page 
+Image name:HDP-non-ambari
+Desc: Base image for Redhat 7 HDP cluster
+
+
+
+
+/usr/hdp/2.4.2.0-258/hadoop-client/*,
+     /usr/hdp/2.4.2.0-258/hadoop-client/lib/*,
+     /usr/hdp/2.4.2.0-258/hadoop-hdfs-client/*,
+     /usr/hdp/2.4.2.0-258/hadoop-hdfs-client/lib/*,
+     /usr/hdp/2.4.2.0-258/hadoop-yarn-client/*,
+     /usr/hdp/2.4.2.0-258/hadoop-yarn-client/lib/*
+	 
+	 
+	 
+	 /usr/hdp/2.4.2.0-258/hadoop/*,
+	 /usr/hdp/2.4.2.0-258/hadoop/lib/*,
+	 /usr/hdp/2.4.2.0-258/hadoop-hdfs/*,
+	 /usr/hdp/2.4.2.0-258/hadoop-hdfs/lib/*,
+	 /usr/hdp/2.4.2.0-258/hadoop-yarn/*,
+	 /usr/hdp/2.4.2.0-258/hadoop-yarn/lib/*,
+	 /usr/hdp/2.4.2.0-258/hadoop-mapreduce/*,
+	 /usr/hdp/2.4.2.0-258/hadoop-mapreduce/lib/*
+
+	 
+ <property>
+     <name>yarn.application.classpath</name>
+     <value>/etc/hadoop/conf,/usr/hdp/2.4.2.0-258/hadoop/*,
+	 /usr/hdp/2.4.2.0-258/hadoop/lib/*,
+	 /usr/hdp/2.4.2.0-258/hadoop-hdfs/*,
+	 /usr/hdp/2.4.2.0-258/hadoop-hdfs/lib/*,
+	 /usr/hdp/2.4.2.0-258/hadoop-yarn/*,
+	 /usr/hdp/2.4.2.0-258/hadoop-yarn/lib/*,
+	 /usr/hdp/2.4.2.0-258/hadoop-mapreduce/*,
+	 /usr/hdp/2.4.2.0-258/hadoop-mapreduce/lib/*</value>
+ </property>
